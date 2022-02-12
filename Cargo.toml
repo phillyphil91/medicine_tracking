@@ -1,0 +1,13 @@
+[package]
+name = "medicine_tracking"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+tokio-postgres = "0.7.5"
+tokio = "1.15.0"
+postgres = "0.19.2"
+rocket = "0.5.0-rc.1"
+log = "0.4.14"
