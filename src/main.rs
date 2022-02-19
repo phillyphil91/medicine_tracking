@@ -8,6 +8,8 @@ use postgres_custom::struct_to_postgres;
 
 use simplelog::*;
 use std::fs::File;
+use std::sync::Once;
+
 
 #[macro_use]
 extern crate rocket;
@@ -27,12 +29,16 @@ async fn set_dosage(dosage: Option<Form<String>>) -> Result<String, CustomError>
 
 #[launch]
 fn rocket() -> _ {
-    WriteLogger::init(
-        LevelFilter::Info,
-        Config::default(),
-        File::create("simple_log.log").unwrap(),
-    )
-    .unwrap();
+    static INIT: Once = Once::new();
+
+    INIT.call_once(|| {
+        WriteLogger::init(
+            LevelFilter::Info,
+            Config::default(),
+            File::create("simple_log.log").unwrap(),
+        )
+        .unwrap();
+    });
 
     rocket::build()
         .mount("/", FileServer::from("./static"))
