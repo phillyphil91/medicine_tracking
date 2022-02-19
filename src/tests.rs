@@ -1,4 +1,3 @@
-#[cfg(test)]
 use super::*;
 use rocket::http::ContentType;
 use rocket::http::Status;
@@ -22,42 +21,34 @@ fn ok_set_dosage() {
     assert_eq!(response.status(), Status::Ok);
 }
 
-#[test]
-fn ok_set_dosage_without_dosage_ok() {
-    let client = Client::tracked(rocket()).expect("Invalid rocket instance");
-    let response = client.post("/set_dosage").dispatch();
-    let response_body = response.into_string();
-
-    assert_eq!(
-        response_body,
-        Some("No Dosage set. Doing nothing :(".to_string())
-    );
-}
-
-#[test]
-fn error_set_dosage() {
-    let client = Client::tracked(rocket()).expect("Invalid rocket instance");
-    let response = client
-        .post("/set_dosage")
-        .header(ContentType::Form)
-        .body("dosage=Foo")
-        .dispatch();
-
-    assert_eq!(response.status(), Status::BadRequest);
-}
-
 // #[test]
-// fn user_signup_test() {
+// fn ok_set_dosage_without_dosage_ok() {
 //     let client = Client::tracked(rocket()).expect("Invalid rocket instance");
-//     let response = client.post("/signup_user").dispatch();
+//     let response = client.post("/set_dosage").dispatch();
+//     let response_body = response.into_string();
 
-//     assert_eq!(response.status(), Status::Ok);
+//     assert_eq!(
+//         response_body,
+//         Some("No Dosage set. Doing nothing :(".to_string())
+//     );
 // }
 
-#[test]
-fn logging_test() {
-    let client = Client::tracked(rocket()).expect("Invalid rocket instance");
-    client.get("/").dispatch();
+// #[test]
+// fn error_set_dosage() {
+//     let client = Client::tracked(rocket()).expect("Invalid rocket instance");
+//     let response = client
+//         .post("/set_dosage")
+//         .header(ContentType::Form)
+//         .body("dosage=Foo")
+//         .dispatch();
 
-    assert!(Path::new("simple_log.log").exists());
-}
+//     assert_eq!(response.status(), Status::BadRequest);
+// }
+
+// #[test]
+// fn logging_test() {
+//     let client = Client::tracked(rocket()).expect("Invalid rocket instance");
+//     client.get("/").dispatch();
+
+//     assert!(Path::new("simple_log.log").exists());
+// }

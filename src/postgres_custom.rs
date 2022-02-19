@@ -3,7 +3,7 @@ use super::CustomError;
 
 pub async fn struct_to_postgres(dosage: String) -> Result<String, CustomError> {
     let (client, connection) = tokio_postgres::connect(
-        "host=localhost port=5432 user=postgres password=hello",
+        "host=localhost port=5432 user=postgres password=bla",
         NoTls,
     )
     .await?;
