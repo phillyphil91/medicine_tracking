@@ -44,18 +44,7 @@ fn ok_set_dosage() {
 
     assert_eq!(response.status(), Status::Ok);
 }
-#[test]
-fn ok_set_dosage_diesel() {
-    // More like an integration test because this will only work with a running postgres db
-    let client = Client::tracked(rocket()).expect("Invalid rocket instance");
-    let response = client
-        .post("/set_dosage_diesel")
-        .header(ContentType::Form)
-        .body("dosage=25")
-        .dispatch();
 
-    assert_eq!(response.status(), Status::Ok);
-}
 #[test]
 fn error_set_dosage() {
     let client = Client::tracked(rocket()).expect("Invalid rocket instance");

@@ -7,7 +7,7 @@ mod postgres_custom;
 mod schema;
 
 use error_custom::CustomError;
-use postgres_custom::{struct_to_postgres, struct_to_postgres_diesel};
+use postgres_custom::struct_to_postgres;
 
 use log::info;
 use simplelog::*;
@@ -39,20 +39,6 @@ async fn set_dosage(dosage: Option<Form<String>>) -> Result<String, CustomError>
     }
 }
 
-#[post("/set_dosage_diesel", data = "<dosage>")]
-async fn set_dosage_diesel(dosage: Option<Form<String>>) -> Result<String, CustomError> {
-    match dosage {
-        Some(x) => {
-            info!("Dosage recorded: {}", x.to_string());
-            Ok(struct_to_postgres_diesel(x.to_string()).await?)
-        }
-        None => {
-            info!("No dosage recorded");
-            Ok(("No Dosage set. Doing nothing :(").to_string())
-        }
-    }
-}
-
 #[launch]
 fn rocket() -> _ {
     // Necessary to only allow logging to be initialized once
@@ -67,5 +53,5 @@ fn rocket() -> _ {
 
     rocket::build()
         .mount("/", FileServer::from("./static"))
-        .mount("/", routes![set_dosage, set_dosage_diesel])
+        .mount("/", routes![set_dosage])
 }
