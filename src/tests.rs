@@ -4,7 +4,6 @@ use rocket::http::Status;
 use rocket::local::blocking::Client;
 use std::path::Path;
 
-
 #[test]
 fn ok_root() {
     let client = Client::tracked(rocket()).expect("Invalid rocket instance");
@@ -41,6 +40,18 @@ fn ok_set_dosage() {
         .post("/set_dosage")
         .header(ContentType::Form)
         .body("dosage=12")
+        .dispatch();
+
+    assert_eq!(response.status(), Status::Ok);
+}
+#[test]
+fn ok_set_dosage_diesel() {
+    // More like an integration test because this will only work with a running postgres db
+    let client = Client::tracked(rocket()).expect("Invalid rocket instance");
+    let response = client
+        .post("/set_dosage_diesel")
+        .header(ContentType::Form)
+        .body("dosage=25")
         .dispatch();
 
     assert_eq!(response.status(), Status::Ok);
