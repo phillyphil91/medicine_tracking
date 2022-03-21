@@ -4,26 +4,24 @@ use rocket::http::Status;
 use rocket::local::blocking::Client;
 use std::path::Path;
 
-
 #[test]
-fn ok_root_ok() {
-    let client = Client::untracked(rocket()).expect("Invalid rocket instance");
+fn ok_root() {
+    let client = Client::tracked(rocket()).expect("Invalid rocket instance");
     let response = client.get("/").dispatch();
 
     assert_eq!(response.status(), Status::Ok);
 }
 
 #[test]
-fn ok_set_dosage() {
-    // More like an integration test because this will only work with a running postgres db
-    let client = Client::untracked(rocket()).expect("Invalid rocket instance");
+fn ok_set_dosage_without_dosage_status() {
+    let client = Client::tracked(rocket()).expect("Invalid rocket instance");
     let response = client.post("/set_dosage").dispatch();
 
     assert_eq!(response.status(), Status::Ok);
 }
 
 #[test]
-fn ok_set_dosage_without_dosage_ok() {
+fn ok_set_dosage_without_dosage_body() {
     let client = Client::tracked(rocket()).expect("Invalid rocket instance");
     let response = client.post("/set_dosage").dispatch();
     let response_body = response.into_string();
@@ -32,6 +30,19 @@ fn ok_set_dosage_without_dosage_ok() {
         response_body,
         Some("No Dosage set. Doing nothing :(".to_string())
     );
+}
+
+#[test]
+fn ok_set_dosage() {
+    // More like an integration test because this will only work with a running postgres db
+    let client = Client::tracked(rocket()).expect("Invalid rocket instance");
+    let response = client
+        .post("/set_dosage")
+        .header(ContentType::Form)
+        .body("dosage=12")
+        .dispatch();
+
+    assert_eq!(response.status(), Status::Ok);
 }
 
 #[test]
