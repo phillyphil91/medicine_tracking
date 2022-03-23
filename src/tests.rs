@@ -64,3 +64,16 @@ fn logging_test() {
 
     assert!(Path::new("simple_log.log").exists());
 }
+
+#[test]
+fn query_data_results() {
+    let client = Client::tracked(rocket()).expect("Invalid rocket instance");
+    client.get("/get_dosage").dispatch();
+
+    let response = client.get("/get_dosage").dispatch();
+
+    assert_eq!(
+        response.into_string(),
+        Some("[{\"id\":30,\"ctime\":\"2022-03-21T18:40:18.786103\",\"dosage\":500.0}]".to_string())
+    );
+}
