@@ -1,3 +1,5 @@
+//TODO: Query data from postgres and display total amount of medicince taken
+
 #[macro_use]
 extern crate diesel;
 
@@ -6,8 +8,9 @@ mod model;
 mod postgres_custom;
 mod schema;
 
+use crate::model::MedicineTrackingQuery;
 use error_custom::CustomError;
-use postgres_custom::struct_to_postgres;
+use postgres_custom::{query_data, struct_to_postgres};
 
 use log::info;
 use simplelog::*;
@@ -21,6 +24,7 @@ extern crate rocket;
 
 use rocket::form::Form;
 use rocket::fs::FileServer;
+use rocket::serde::json::Json;
 
 #[cfg(test)]
 mod tests;
@@ -39,6 +43,11 @@ async fn set_dosage(dosage: Option<Form<String>>) -> Result<String, CustomError>
     }
 }
 
+#[get("/get_dosage")]
+async fn get_dosage() -> Json<Vec<MedicineTrackingQuery>> {
+    query_data().await
+}
+
 #[launch]
 fn rocket() -> _ {
     // Necessary to only allow logging to be initialized once
@@ -53,5 +62,5 @@ fn rocket() -> _ {
 
     rocket::build()
         .mount("/", FileServer::from("./static"))
-        .mount("/", routes![set_dosage])
+        .mount("/", routes![set_dosage, get_dosage])
 }
