@@ -1,16 +1,16 @@
-//TODO: Query data from postgres and display total amount of medicince taken
-
 #[macro_use]
 extern crate diesel;
 
+mod common_structs;
 mod error_custom;
+mod medicine_logic;
 mod model;
 mod postgres_custom;
 mod schema;
 
-use crate::model::MedicineTrackingQuery;
+use common_structs::QueryDataResponse;
 use error_custom::CustomError;
-use postgres_custom::{query_data, struct_to_postgres};
+use postgres_custom::query_data;
 
 use log::info;
 use simplelog::*;
@@ -29,23 +29,18 @@ use rocket::serde::json::Json;
 #[cfg(test)]
 mod tests;
 
-#[post("/set_dosage", data = "<dosage>")]
-async fn set_dosage(dosage: Option<Form<String>>) -> Result<String, CustomError> {
-    match dosage {
-        Some(x) => {
-            info!("Dosage recorded: {}", x.to_string());
-            Ok(struct_to_postgres(x.to_string()).await?)
-        }
-        None => {
-            info!("No dosage recorded");
-            Ok(("No Dosage set. Doing nothing :(").to_string())
-        }
+#[get("/dosage")]
+async fn get_dosage() -> Result<Json<QueryDataResponse>, String> {
+    let current_dosage = query_data().await;
+    match current_dosage {
+        Ok(x) => Ok(Json(x)),
+        Err(_e) => Err("No dosage to suggest".to_string()),
     }
 }
 
-#[get("/get_dosage")]
-async fn get_dosage() -> Json<Vec<MedicineTrackingQuery>> {
-    query_data().await
+#[post("/dosage", data = "<dosage>")]
+async fn set_dosage(dosage: Option<Form<String>>) -> Result<String, CustomError> {
+    todo!()
 }
 
 #[launch]
@@ -62,5 +57,38 @@ fn rocket() -> _ {
 
     rocket::build()
         .mount("/", FileServer::from("./static"))
-        .mount("/", routes![set_dosage, get_dosage])
+        .mount("/", routes![get_dosage])
+}
+
+#[cfg(test)]
+mod test_medicine_logic {
+    use super::*;
+    use rocket::http::Status;
+    use rocket::local::blocking::Client;
+
+    #[test]
+    fn ok_root() {
+        let client = Client::tracked(rocket()).expect("Invalid rocket instance");
+        let response = client.get("/").dispatch();
+
+        assert_eq!(response.status(), Status::Ok);
+    }
+    #[test]
+    fn test_get_dosage_status_code() {
+        let client = Client::tracked(rocket()).expect("Invalid rocket instance");
+        let response = client.get("/dosage").dispatch();
+
+        assert_eq!(response.status(), Status::Ok);
+    }
+
+    #[test]
+    fn test_get_dosage_status_response_body() {
+        let client = Client::tracked(rocket()).expect("Invalid rocket instance");
+        let response = client.get("/dosage").dispatch();
+
+        assert_eq!(
+            response.into_string().unwrap(),
+            "{\"dosage\":1.25,\"dosage_count\":30}"
+        );
+    }
 }
