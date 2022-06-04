@@ -48,7 +48,7 @@ use serde::Serialize;
 // }
 
 pub async fn query_data() -> Result<QueryDataResponse, Box<dyn std::error::Error>> {
-    // recommends dosage and dosage_count
+    // returns current dosage and dosage_count
 
     // use crate::medicine_logic::return_recommended_dosage;
     use crate::schema::medicince_tracking::dsl::*;
@@ -69,18 +69,5 @@ pub async fn query_data() -> Result<QueryDataResponse, Box<dyn std::error::Error
 
 #[cfg(test)]
 mod test_postgres_custom {
-    use super::*;
-    use chrono::NaiveDate;
-
-    // #[test]
-    // fn test_insert() {
-    //     let mock_query_result = MedicineTrackingQuery {
-    //         id: 1,
-    //         ctime: Some(NaiveDate::from_ymd(2017, 31, 1).and_hms(9, 20, 20)),
-    //         dosage: Some(1.25),
-    //         dosage_count: Some(5),
-    //     };
-
-    // }
 }
 

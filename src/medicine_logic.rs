@@ -54,7 +54,7 @@ fn check_dosage_count_limit(
 }
 
 pub fn return_recommended_dosage_and_count(
-    query_results: &MedicineTrackingQuery,
+    query_results: &QueryDataResponse,
 ) -> Result<QueryDataResponse, CustomError> {
     // Return recommended dosage and dosage_count in a serialize struct
 
@@ -70,64 +70,60 @@ pub fn return_recommended_dosage_and_count(
 
     // Assign DosageLogic variant to dosage
     let dosage_variant = match query_results.dosage {
-        Some(75.0) => DosageLogic::mg75,
-        Some(50.0) => DosageLogic::mg50,
-        Some(25.0) => DosageLogic::mg25,
-        Some(12.5) => DosageLogic::mg12_5,
-        Some(5.0) => DosageLogic::mg5,
-        Some(2.5) => DosageLogic::mg2_5,
-        Some(1.25) => DosageLogic::mg1_25,
+        75.0 => DosageLogic::mg75,
+        50.0 => DosageLogic::mg50,
+        25.0 => DosageLogic::mg25,
+        12.5 => DosageLogic::mg12_5,
+        5.0 => DosageLogic::mg5,
+        2.5 => DosageLogic::mg2_5,
+        1.25 => DosageLogic::mg1_25,
         _ => DosageLogic::Invalid,
     };
 
-    let recommendation = if let Some(dosage_count) = query_results.dosage_count {
-        match dosage_variant {
+    let recommendation =  match dosage_variant {
             DosageLogic::mg75 => Ok(check_dosage_count_limit(
                 2,
-                dosage_count,
+                query_results.dosage_count,
                 DosageLogic::mg75,
                 logic_index_map,
             )),
             DosageLogic::mg50 => Ok(check_dosage_count_limit(
                 3,
-                dosage_count,
+                query_results.dosage_count,
                 DosageLogic::mg50,
                 logic_index_map,
             )),
             DosageLogic::mg25 => Ok(check_dosage_count_limit(
                 5,
-                dosage_count,
+                query_results.dosage_count,
                 DosageLogic::mg25,
                 logic_index_map,
             )),
             DosageLogic::mg12_5 => Ok(check_dosage_count_limit(
                 7,
-                dosage_count,
+                query_results.dosage_count,
                 DosageLogic::mg12_5,
                 logic_index_map,
             )),
             DosageLogic::mg5 => Ok(check_dosage_count_limit(
                 14,
-                dosage_count,
+                query_results.dosage_count,
                 DosageLogic::mg5,
                 logic_index_map,
             )),
             DosageLogic::mg2_5 => Ok(check_dosage_count_limit(
                 28,
-                dosage_count,
+                query_results.dosage_count,
                 DosageLogic::mg2_5,
                 logic_index_map,
             )),
             DosageLogic::mg1_25 => Ok(check_dosage_count_limit(
                 14,
-                dosage_count,
+                query_results.dosage_count,
                 DosageLogic::mg1_25,
                 logic_index_map,
             )),
             DosageLogic::Invalid => Err(CustomError::DosageNotRecommend),
-        }
-    } else {
-        panic!("Something went wrong");
     };
 
     match recommendation {
@@ -146,11 +142,9 @@ mod test_medicine_logic {
 
     #[test]
     fn test_current_less_than_max() {
-        let mock_query_result = MedicineTrackingQuery {
-            id: 5,
-            ctime: Some(NaiveDate::from_ymd(2016, 7, 8).and_hms(9, 10, 11)),
-            dosage: Some(12.5),
-            dosage_count: Some(5),
+        let mock_query_result = QueryDataResponse {
+            dosage: 12.5,
+            dosage_count: 5,
         };
 
         let mock_query_data_response = QueryDataResponse {
@@ -165,11 +159,9 @@ mod test_medicine_logic {
 
     #[test]
     fn test_current_more_than_max() {
-        let mock_query_result = MedicineTrackingQuery {
-            id: 5,
-            ctime: Some(NaiveDate::from_ymd(2016, 7, 8).and_hms(9, 10, 11)),
-            dosage: Some(12.5),
-            dosage_count: Some(10),
+        let mock_query_result = QueryDataResponse {
+            dosage: 12.5,
+            dosage_count: 10,
         };
 
         let mock_query_data_response = QueryDataResponse {
@@ -186,24 +178,22 @@ mod test_medicine_logic {
     #[test]
     #[should_panic]
     fn test_non_existing_dosage() {
-        let mock_query_result = MedicineTrackingQuery {
-            id: 5,
-            ctime: Some(NaiveDate::from_ymd(2016, 7, 8).and_hms(9, 10, 11)),
-            dosage: Some(200.0),
-            dosage_count: Some(10),
+        let mock_query_result = QueryDataResponse {
+            dosage: 200.0,
+            dosage_count: 10,
         };
+
 
         return_recommended_dosage_and_count(&mock_query_result).unwrap();
     }
 
     #[test]
     fn test_current_more_than_1_25_max() {
-        let mock_query_result = MedicineTrackingQuery {
-            id: 5,
-            ctime: Some(NaiveDate::from_ymd(2016, 7, 8).and_hms(9, 10, 11)),
-            dosage: Some(1.25),
-            dosage_count: Some(20),
+        let mock_query_result = QueryDataResponse {
+            dosage: 1.25,
+            dosage_count: 20,
         };
+
 
         let mock_query_data_response = QueryDataResponse {
             dosage: 1.25,

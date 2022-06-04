@@ -10,6 +10,7 @@ mod schema;
 
 use common_structs::QueryDataResponse;
 use error_custom::CustomError;
+use medicine_logic::return_recommended_dosage_and_count;
 use postgres_custom::query_data;
 
 use log::info;
@@ -26,14 +27,25 @@ use rocket::form::Form;
 use rocket::fs::FileServer;
 use rocket::serde::json::Json;
 
-#[cfg(test)]
-mod tests;
+// #[cfg(test)]
+// mod tests;
 
 #[get("/dosage")]
 async fn get_dosage() -> Result<Json<QueryDataResponse>, String> {
     let current_dosage = query_data().await;
     match current_dosage {
         Ok(x) => Ok(Json(x)),
+        Err(_e) => Err("No dosage to suggest".to_string()),
+    }
+}
+
+#[get("/recommended_dosage")]
+async fn get_recommended_dosage() -> Result<Json<QueryDataResponse>, String> {
+    match query_data().await {
+        Ok(current_dosage) => match return_recommended_dosage_and_count(&current_dosage) {
+            Ok(x) => Ok(Json(x)),
+            Err(_e) => Err("No dosage to suggest".to_string()),
+        },
         Err(_e) => Err("No dosage to suggest".to_string()),
     }
 }
@@ -57,7 +69,7 @@ fn rocket() -> _ {
 
     rocket::build()
         .mount("/", FileServer::from("./static"))
-        .mount("/", routes![get_dosage])
+        .mount("/", routes![get_dosage, get_recommended_dosage])
 }
 
 #[cfg(test)]
@@ -89,6 +101,25 @@ mod test_medicine_logic {
         assert_eq!(
             response.into_string().unwrap(),
             "{\"dosage\":1.25,\"dosage_count\":30}"
+        );
+    }
+
+    #[test]
+    fn test_get_recommended_dosage_status_code() {
+        let client = Client::tracked(rocket()).expect("Invalid rocket instance");
+        let response = client.get("/recommended_dosage").dispatch();
+
+        assert_eq!(response.status(), Status::Ok);
+    }
+
+    #[test]
+    fn test_get_recommended_dosage_status_body() {
+        let client = Client::tracked(rocket()).expect("Invalid rocket instance");
+        let response = client.get("/recommended_dosage").dispatch();
+
+        assert_eq!(
+            response.into_string().unwrap(),
+            "{\"dosage\":1.25,\"dosage_count\":0}"
         );
     }
 }
