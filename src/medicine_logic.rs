@@ -138,7 +138,6 @@ pub fn return_recommended_dosage_and_count(
 #[cfg(test)]
 mod test_medicine_logic {
     use super::*;
-    use chrono::NaiveDate;
 
     #[test]
     fn test_current_less_than_max() {

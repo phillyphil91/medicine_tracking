@@ -11,7 +11,7 @@ mod schema;
 use common_structs::QueryDataResponse;
 use error_custom::CustomError;
 use medicine_logic::return_recommended_dosage_and_count;
-use postgres_custom::query_data;
+use postgres_custom::{dosage_to_postgres, query_data};
 
 use log::info;
 use simplelog::*;
@@ -51,8 +51,11 @@ async fn get_recommended_dosage() -> Result<Json<QueryDataResponse>, String> {
 }
 
 #[post("/dosage", data = "<dosage>")]
-async fn set_dosage(dosage: Option<Form<String>>) -> Result<String, CustomError> {
-    todo!()
+async fn set_dosage(dosage: String) -> Result<String, String> {
+    match dosage_to_postgres(dosage).await {
+        Ok(_x) => Ok("Insert worked".to_string()),
+        Err(_e) => Err("Insert didn't work".to_string()),
+    }
 }
 
 #[launch]
@@ -69,7 +72,7 @@ fn rocket() -> _ {
 
     rocket::build()
         .mount("/", FileServer::from("./static"))
-        .mount("/", routes![get_dosage, get_recommended_dosage])
+        .mount("/", routes![get_dosage, set_dosage, get_recommended_dosage])
 }
 
 #[cfg(test)]
@@ -103,7 +106,6 @@ mod test_medicine_logic {
             "{\"dosage\":1.25,\"dosage_count\":30}"
         );
     }
-
     #[test]
     fn test_get_recommended_dosage_status_code() {
         let client = Client::tracked(rocket()).expect("Invalid rocket instance");
@@ -113,7 +115,7 @@ mod test_medicine_logic {
     }
 
     #[test]
-    fn test_get_recommended_dosage_status_body() {
+    fn test_get_recommended_dosage_body() {
         let client = Client::tracked(rocket()).expect("Invalid rocket instance");
         let response = client.get("/recommended_dosage").dispatch();
 
@@ -121,5 +123,28 @@ mod test_medicine_logic {
             response.into_string().unwrap(),
             "{\"dosage\":1.25,\"dosage_count\":0}"
         );
+    }
+    #[test]
+    fn test_set_recommended_dosage_status() {
+        let client = Client::tracked(rocket()).expect("Invalid rocket instance");
+        let response = client.post("/dosage").body("1.25").dispatch();
+
+        assert_eq!(response.status(), Status::Ok);
+    }
+
+    #[test]
+    fn test_set_recommended_dosage_body() {
+        let client = Client::tracked(rocket()).expect("Invalid rocket instance");
+        let response = client.post("/dosage").body("1.25").dispatch();
+
+        assert_eq!(response.into_string().unwrap(), "Insert worked");
+    }
+
+    #[test]
+    fn test_set_wrong_dosage_body() {
+        let client = Client::tracked(rocket()).expect("Invalid rocket instance");
+        let response = client.post("/dosage").body("5.0").dispatch();
+
+        assert_eq!(response.into_string().unwrap(), "Insert didn't work");
     }
 }
