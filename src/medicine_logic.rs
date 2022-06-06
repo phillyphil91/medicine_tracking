@@ -14,7 +14,7 @@
 // Query what much the current value
 use indexmap::IndexMap;
 
-use crate::{error_custom::CustomError, model::MedicineTrackingQuery};
+use crate::error_custom::CustomError;
 use crate::common_structs::QueryDataResponse;
 
 #[allow(non_camel_case_types)]

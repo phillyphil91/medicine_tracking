@@ -9,8 +9,6 @@ use chrono::Utc;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 
-use serde::Serialize;
-
 pub async fn dosage_to_postgres(dosage: String) -> Result<String, Box<dyn std::error::Error>> {
     // Insert dosage to postgres db
 
@@ -21,7 +19,7 @@ pub async fn dosage_to_postgres(dosage: String) -> Result<String, Box<dyn std::e
     match query_result {
         Ok(current_dosage) => match return_recommended_dosage_and_count(&current_dosage) {
             Ok(recommended_dosage) => {
-                if dosage != recommended_dosage.dosage {
+                if (dosage - recommended_dosage.dosage).abs() > 0.5 {
                     Err(Box::new(CustomError::DosageNotRecommend))
                 } else {
                     let medicine_struct = MedicineTrackingInsert {
