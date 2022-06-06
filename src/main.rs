@@ -9,11 +9,10 @@ mod postgres_custom;
 mod schema;
 
 use common_structs::QueryDataResponse;
-use error_custom::CustomError;
+use error_custom::*;
 use medicine_logic::return_recommended_dosage_and_count;
 use postgres_custom::{dosage_to_postgres, query_data};
 
-use log::info;
 use simplelog::*;
 use std::fs::File;
 
@@ -22,39 +21,51 @@ static INIT: Once = Once::new();
 
 #[macro_use]
 extern crate rocket;
-
-use rocket::form::Form;
 use rocket::fs::FileServer;
 use rocket::serde::json::Json;
 
 // #[cfg(test)]
 // mod tests;
 
+#[derive(Responder)]
+#[response(status = 500, content_type = "text")]
+struct My500Responder {
+    inner: String,
+}
+
 #[get("/dosage")]
-async fn get_dosage() -> Result<Json<QueryDataResponse>, String> {
+async fn get_dosage() -> Result<Json<QueryDataResponse>, My500Responder> {
     let current_dosage = query_data().await;
     match current_dosage {
         Ok(x) => Ok(Json(x)),
-        Err(_e) => Err("No dosage to suggest".to_string()),
+        Err(_e) => Err(My500Responder {
+            inner: "Couldn't retrieve current dosage.".to_string(),
+        }),
     }
 }
 
 #[get("/recommended_dosage")]
-async fn get_recommended_dosage() -> Result<Json<QueryDataResponse>, String> {
+async fn get_recommended_dosage() -> Result<Json<QueryDataResponse>, My500Responder> {
     match query_data().await {
         Ok(current_dosage) => match return_recommended_dosage_and_count(&current_dosage) {
             Ok(x) => Ok(Json(x)),
-            Err(_e) => Err("No dosage to suggest".to_string()),
+            Err(_e) => Err(My500Responder {
+                inner: "No recommended dosage available".to_string(),
+            }),
         },
-        Err(_e) => Err("No dosage to suggest".to_string()),
+        Err(_e) => Err(My500Responder {
+                inner: "No recommended dosage available".to_string(),
+            }),
     }
 }
 
 #[post("/dosage", data = "<dosage>")]
-async fn set_dosage(dosage: String) -> Result<String, String> {
+async fn set_dosage(dosage: String) -> Result<String, My500Responder> {
     match dosage_to_postgres(dosage).await {
         Ok(_x) => Ok("Insert worked".to_string()),
-        Err(_e) => Err("Insert didn't work".to_string()),
+        Err(_e) => Err(My500Responder {
+            inner: "Insert didn't work.".to_string(),
+        }),
     }
 }
 
@@ -145,6 +156,6 @@ mod test_medicine_logic {
         let client = Client::tracked(rocket()).expect("Invalid rocket instance");
         let response = client.post("/dosage").body("5.0").dispatch();
 
-        assert_eq!(response.into_string().unwrap(), "Insert didn't work");
+        assert_eq!(response.into_string().unwrap(), "Insert didn't work.");
     }
 }
