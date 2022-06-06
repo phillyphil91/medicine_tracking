@@ -70,13 +70,13 @@ pub fn return_recommended_dosage_and_count(
 
     // Assign DosageLogic variant to dosage
     let dosage_variant = match query_results.dosage {
-        75.0 => DosageLogic::mg75,
-        50.0 => DosageLogic::mg50,
-        25.0 => DosageLogic::mg25,
-        12.5 => DosageLogic::mg12_5,
-        5.0 => DosageLogic::mg5,
-        2.5 => DosageLogic::mg2_5,
-        1.25 => DosageLogic::mg1_25,
+        x if (75.0..=76.0).contains(&x) => DosageLogic::mg75,
+        x if (50.0..=75.0).contains(&x) => DosageLogic::mg50,
+        x if (25.0..=50.0).contains(&x) => DosageLogic::mg25,
+        x if (12.5..=25.0).contains(&x) => DosageLogic::mg12_5,
+        x if (5.0..=12.5).contains(&x) => DosageLogic::mg5,
+        x if (2.5..=5.0).contains(&x) => DosageLogic::mg2_5,
+        x if (1.25..=2.5).contains(&x) => DosageLogic::mg1_25,
         _ => DosageLogic::Invalid,
     };
 
