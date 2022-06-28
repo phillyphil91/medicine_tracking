@@ -8,7 +8,7 @@ mod model;
 mod postgres_custom;
 mod schema;
 
-use common_structs::QueryDataResponse;
+use common_structs::{QueryDataResponse, TemplateContext};
 use error_custom::*;
 use medicine_logic::return_recommended_dosage_and_count;
 use postgres_custom::{dosage_to_postgres, query_data};
@@ -23,14 +23,29 @@ static INIT: Once = Once::new();
 extern crate rocket;
 use rocket::fs::FileServer;
 use rocket::serde::json::Json;
+use rocket_dyn_templates::Template;
 
 // #[cfg(test)]
 // mod tests;
 
-#[derive(Responder)]
+#[derive(Responder, Debug)]
 #[response(status = 500, content_type = "text")]
 struct My500Responder {
     inner: String,
+}
+#[get("/")]
+async fn index() -> Template {
+    let current_dosage = get_dosage().await.ok().unwrap().into_inner();
+
+    let recommended_dosage = get_recommended_dosage().await.unwrap().into_inner();
+
+    let template_context = TemplateContext {
+        current_dosage: current_dosage.dosage,
+        current_dosage_count: current_dosage.dosage_count,
+        recommended_dosage: recommended_dosage.dosage,
+    };
+
+    Template::render("index", template_context)
 }
 
 #[get("/dosage")]
@@ -54,12 +69,12 @@ async fn get_recommended_dosage() -> Result<Json<QueryDataResponse>, My500Respon
             }),
         },
         Err(_e) => Err(My500Responder {
-                inner: "No recommended dosage available".to_string(),
-            }),
+            inner: "No recommended dosage available".to_string(),
+        }),
     }
 }
 
-#[post("/dosage", data = "<dosage>")]
+#[get("/dosage/<dosage>")]
 async fn set_dosage(dosage: String) -> Result<String, My500Responder> {
     match dosage_to_postgres(dosage).await {
         Ok(_x) => Ok("Insert worked".to_string()),
@@ -82,8 +97,12 @@ fn rocket() -> _ {
     });
 
     rocket::build()
+        .mount(
+            "/",
+            routes![index, get_dosage, set_dosage, get_recommended_dosage],
+        )
         .mount("/", FileServer::from("./static"))
-        .mount("/", routes![get_dosage, set_dosage, get_recommended_dosage])
+        .attach(Template::fairing())
 }
 
 #[cfg(test)]
@@ -138,7 +157,7 @@ mod test_medicine_logic {
     #[test]
     fn test_set_recommended_dosage_status() {
         let client = Client::tracked(rocket()).expect("Invalid rocket instance");
-        let response = client.post("/dosage").body("1.25").dispatch();
+        let response = client.get("/dosage/1.25").dispatch();
 
         assert_eq!(response.status(), Status::Ok);
     }
@@ -146,7 +165,7 @@ mod test_medicine_logic {
     #[test]
     fn test_set_recommended_dosage_body() {
         let client = Client::tracked(rocket()).expect("Invalid rocket instance");
-        let response = client.post("/dosage").body("1.25").dispatch();
+        let response = client.get("/dosage/1.25").dispatch();
 
         assert_eq!(response.into_string().unwrap(), "Insert worked");
     }
@@ -154,7 +173,7 @@ mod test_medicine_logic {
     #[test]
     fn test_set_wrong_dosage_body() {
         let client = Client::tracked(rocket()).expect("Invalid rocket instance");
-        let response = client.post("/dosage").body("5.0").dispatch();
+        let response = client.get("/dosage/5.0").dispatch();
 
         assert_eq!(response.into_string().unwrap(), "Insert didn't work.");
     }
