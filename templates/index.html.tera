@@ -1,0 +1,101 @@
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=firefox" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+  <!-- MDB -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/4.2.0/mdb.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+
+</head>
+
+<body>
+  <div class="container">
+    <div class="row text-center">
+      <h1>Taro's Medicine Tracking</h1>
+    </div>
+  </div>
+  <div class="container bg-warning">
+    <div class="row">
+      <div class="col-md-4 bg-info" align="center">
+        <img src="../../medicine.png" alt="...">
+        <p>Recommended dosage:</p>
+        <p>{{recommended_dosage}}</p>
+      </div>
+      <div class="col-md-4" align="center">
+        <img src="../../medicine.png" alt="...">
+        <p>Current dosage:</p>
+        <p>{{current_dosage}}</p>
+      </div>
+      <div class="col-md-4" align="center">
+        <img src="../../calendar.png" alt="...">
+        <p>Current dosage count:</p>
+        <p>{{current_dosage_count}}</p>
+      </div>
+    </div>
+  </div>
+  <div class="container bg-sucess">
+    <div class="row bg-success">
+      <div class="col-md text-center">
+        <p>Please select a dosage:</p>
+      </div>
+    </div>
+    <div class="row bg-danger text-center">
+      <div class="col-md-3 bg-image hover-overlay ripple shadow-1-strong rounded" id="first-pill">
+        <a href="dosage/1.25">
+          <div class="mask" style="background-color: rgba(251, 251, 251, 0.2)"></div>
+        </a>
+        <img src="../../pill.png">
+        <p>1.25</p>
+      </div>
+      <div class="col-md-3 bg-image hover-overlay ripple shadow-1-strong rounded" id="first-pill">
+        <a href="dosage/2.5">
+          <div class="mask" style="background-color: rgba(251, 251, 251, 0.2)"></div>
+        </a>
+        <img src="../../pill.png">
+        <p>2.5</p>
+      </div>
+      <div class="col-md-3 bg-image hover-overlay ripple shadow-1-strong rounded" id="first-pill">
+        <a href="dosage/5.0">
+          <div class="mask" style="background-color: rgba(251, 251, 251, 0.2)"></div>
+        </a>
+        <img src="../../pill.png">
+        <p>5.0</p>
+      </div>
+      <div class="col-md-3 bg-image hover-overlay ripple shadow-1-strong rounded" id="first-pill">
+        <a href="dosage/12.5">
+          <div class="mask" style="background-color: rgba(251, 251, 251, 0.2)"></div>
+        </a>
+        <img src="../../pill.png">
+        <p>12.5</p>
+      </div>
+    </div>
+    <div class="row bg-danger text-center">
+      <div class="col-md-4 bg-image hover-overlay ripple shadow-1-strong rounded" id="first-pill">
+        <a href="dosage/25.0">
+          <div class="mask" style="background-color: rgba(251, 251, 251, 0.2)"></div>
+        </a>
+        <img src="../../pill.png">
+        <p>25</p>
+      </div>
+      <div class="col-md-4 bg-image hover-overlay ripple shadow-1-strong rounded" id="first-pill">
+        <a href="dosage/50.0">
+          <div class="mask" style="background-color: rgba(251, 251, 251, 0.2)"></div>
+        </a>
+        <img src="../../pill.png">
+        <p>50</p>
+      </div>
+      <div class="col-md-4 bg-image hover-overlay ripple shadow-1-strong rounded" id="first-pill">
+        <a href="dosage/75.0">
+          <div class="mask" style="background-color: rgba(251, 251, 251, 0.2)"></div>
+        </a>
+        <img src="../../pill.png">
+        <p>75</p>
+      </div>
+    </div>
+</body>
+
+</html>
